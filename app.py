@@ -1,3 +1,6 @@
+import os
+import json
+
 from flask import Flask, request, jsonify
 
 from datetime import datetime
@@ -13,14 +16,29 @@ logging.basicConfig(
 
 app = Flask(__name__)
 
+
+EVENTS_FILE = 'events.json'
+
+def load_events():
+    if os.path.exists(EVENTS_FILE):
+        with open(EVENTS_FILE, 'r') as file:
+            return json.load(file)
+    return []
+
+def save_events(events):
+    with open(EVENTS_FILE, 'w') as file:
+        json.dump(events, file, indent=4)
+
+events = load_events()
+
 # events = []
-events = [
-    {"description": "New Year Celebration", "time": "2025-01-01T00:00:00", "id": 1},
-    {"description": "Meeting", "time": "2025-01-02T10:00:00", "id": 2},
-    {"description": "Meeting", "time": "2025-01-06T10:00:00", "id": 3},
-    {"description": "Meeting", "time": "2025-01-06T10:30:00", "id": 4},
-    {"description": "Meeting", "time": "2025-01-06T11:30:00", "id": 5},
-]
+# events = [
+#     {"description": "New Year Celebration", "time": "2025-01-01T00:00:00", "id": 1},
+#     {"description": "Meeting", "time": "2025-01-02T10:00:00", "id": 2},
+#     {"description": "Meeting", "time": "2025-01-06T10:00:00", "id": 3},
+#     {"description": "Meeting", "time": "2025-01-06T10:30:00", "id": 4},
+#     {"description": "Meeting", "time": "2025-01-06T11:30:00", "id": 5},
+# ]
 
 
 DATETIME_FORMAT = '%Y-%m-%dT%H:%M:%S'
