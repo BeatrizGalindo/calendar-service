@@ -22,23 +22,23 @@ EVENTS_FILE = 'events.json'
 def load_events():
     if os.path.exists(EVENTS_FILE):
         with open(EVENTS_FILE, 'r') as file:
-            return json.load(file)
+            events = json.load(file)
+            logging.info(f"Loaded events: {events}")
+            return events
+    logging.debug("No events file found.")
     return []
 
+
 def save_events(events):
-    with open(EVENTS_FILE, 'w') as file:
-        json.dump(events, file, indent=4)
+    try:
+        with open(EVENTS_FILE, 'w') as file:
+            json.dump(events, file, indent=4)
+        logging.info(f"Events saved to {os.path.abspath(EVENTS_FILE)}")
+    except Exception as e:
+        print(f"Error saving events: {e}")
+
 
 events = load_events()
-
-# events = []
-# events = [
-#     {"description": "New Year Celebration", "time": "2025-01-01T00:00:00", "id": 1},
-#     {"description": "Meeting", "time": "2025-01-02T10:00:00", "id": 2},
-#     {"description": "Meeting", "time": "2025-01-06T10:00:00", "id": 3},
-#     {"description": "Meeting", "time": "2025-01-06T10:30:00", "id": 4},
-#     {"description": "Meeting", "time": "2025-01-06T11:30:00", "id": 5},
-# ]
 
 
 DATETIME_FORMAT = '%Y-%m-%dT%H:%M:%S'
@@ -53,27 +53,29 @@ def add_event():
             return jsonify({"error": "Missing required fields"}), 400
 
         if any(existing_event["id"] == event["id"] for existing_event in events):
-            return jsonify({"error": f"Event already exists with ID {event['id']}"}), 400
+            return jsonify({"error": f"Event already exists with id {event['id']}"}), 400
 
         events.append(event)
+        save_events(events)
         logging.info(f"Event {event['id']} added to database")
         return jsonify(event), 201
 
     except Exception as e:
         logging.error(f"Error creating event: {str(e)}")
-        return jsonify({"error": str(e)}), 400
+        return jsonify({"error": f"An error occurred while creating the event: {str(e)}"}), 400
 
-@app.route('/events/<int:ID>', methods=['GET'])
-def get_event(ID):
+
+@app.route('/events/<int:id>', methods=['GET'])
+def get_event(id):
     try:
-        logging.debug(f"Received request to retrieve event with ID: {ID}")
+        logging.debug(f"Received request to retrieve event with id: {id}")
         datetime_format = request.args.get('datetime_format', '%Y-%m-%dT%H:%M:%S')
         logging.debug(f"Using datetime format: {datetime_format}")
 
 
         for event in events:
             logging.debug(f"Checking event: {event}")
-            if event["id"] == ID:
+            if event["id"] == id:
                 try:
                     event_time = datetime.strptime(event["time"], '%Y-%m-%dT%H:%M:%S')
                     event["time"] = event_time.strftime(datetime_format)
@@ -85,8 +87,8 @@ def get_event(ID):
                 logging.info(f"Event {event['id']} retrieved from database")
                 return jsonify(event), 200
 
-        logging.warning(f"Event {ID} not found")
-        return jsonify({"error": f"Event with ID {ID} not found"}), 404
+        logging.warning(f"Event {id} not found")
+        return jsonify({"error": f"Event with id {id} not found"}), 404
 
     except Exception as e:
         logging.error(f"Error retrieving event: {str(e)}")
