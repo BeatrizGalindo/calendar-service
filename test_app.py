@@ -1,7 +1,6 @@
 import unittest
 import os
 from app import app, load_events, save_events, find_event_by_id
-import logging
 
 EVENTS_FILE = 'events.json'
 

@@ -21,6 +21,7 @@ The service stores events persistently in a `JSON` file (`events.json`), and it 
 - Flask
 - `requirements.txt` dependencies
 
+
 ## Installation
 
 ### 1. Clone the Repository
@@ -57,6 +58,11 @@ This will start the container and map port 5000 from the container to 5001 on yo
 python3 app.py
 ```
 
+### 5. Run the tests
+
+```
+python3 -m unittest test_app.py
+```
 
 ### API Endpoints
 
