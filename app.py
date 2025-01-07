@@ -38,8 +38,6 @@ def save_events(events):
     except Exception as e:
         logging.error(f"Error saving events: {e}")
 
-# Load initial events
-events = load_events()
 
 # Event Processing Logic
 def process_event(event, events):
@@ -65,6 +63,60 @@ def process_event(event, events):
     logging.info(f"Event {event['id']} added.")
     return event, 201
 
+def find_event_by_id(event_id, events, datetime_format):
+    """
+    Retrieve an event by its ID and format the time if necessary.
+
+    :param event_id: The ID of the event to retrieve.
+    :param events: The list of events.
+    :param datetime_format: The format for the event time.
+    :return: A tuple containing the event (if found) and the HTTP status code.
+    """
+    for event in events:
+        if event["id"] == event_id:
+            try:
+                event_time = datetime.strptime(event["time"], DATETIME_FORMAT)
+                event["time"] = event_time.strftime(datetime_format)
+                logging.info(f"Event time {event['time']} found and formatted.")
+                return event, 200
+            except ValueError:
+                logging.error(f"Invalid time format for event {event_id}.")
+                return {"error": f"Invalid time format for event {event_id}."}, 400
+
+    logging.warning(f"Event {event_id} not found.")
+    return {"error": f"Event with id {event_id} not found."}, 404
+
+def retrieve_events(events, datetime_format, from_time_str=None, to_time_str=None):
+    """
+    Retrieve all events within a specific time range.
+
+    :param events: List of all events.
+    :param datetime_format: Desired datetime format for input/output.
+    :param from_time_str: Start time in string format (optional).
+    :param to_time_str: End time in string format (optional).
+    :return: A tuple containing the matching events and HTTP status code.
+    """
+    try:
+        now = datetime.now()
+        from_time = datetime.strptime(from_time_str, datetime_format) if from_time_str else datetime(now.year, now.month, now.day)
+        to_time = datetime.strptime(to_time_str, datetime_format) if to_time_str else now
+
+        if from_time > to_time:
+            return {"error": "'from_time' cannot be after 'to_time'."}, 400
+
+        matching_events = [
+            {**event, "time": datetime.strptime(event["time"], DATETIME_FORMAT).strftime(datetime_format)}
+            for event in events
+            if from_time <= datetime.strptime(event["time"], DATETIME_FORMAT) <= to_time
+        ]
+        return {"events": matching_events}, 200
+    except ValueError as ve:
+        logging.error(f"Invalid date format: {ve}")
+        return {"error": "Invalid date format."}, 400
+    except Exception as e:
+        logging.error(f"Error retrieving events: {e}")
+        return {"error": "An error occurred."}, 500
+
 # Routes
 @app.route('/events', methods=['POST'])
 def add_event():
@@ -79,51 +131,27 @@ def add_event():
 
 @app.route('/events/<int:event_id>', methods=['GET'])
 def get_event(event_id):
-    """Retrieve a specific event by ID."""
+    """HTTP endpoint to retrieve a specific event by ID."""
     try:
         datetime_format = request.args.get('datetime_format', DATETIME_FORMAT)
-        for event in events:
-            if event["id"] == event_id:
-                try:
-                    event_time = datetime.strptime(event["time"], DATETIME_FORMAT)
-                    event["time"] = event_time.strftime(datetime_format)
-                except ValueError:
-                    logging.error(f"Invalid time format for event {event_id}.")
-                    return jsonify({"error": f"Invalid time format for event {event_id}."}), 400
-                logging.info(f"Event {event_id} retrieved.")
-                return jsonify(event), 200
-        return jsonify({"error": f"Event with id {event_id} not found."}), 404
+        result, status_code = find_event_by_id(event_id, events, datetime_format)
+        return jsonify(result), status_code
     except Exception as e:
         logging.error(f"Error retrieving event {event_id}: {e}")
-        return jsonify({"error": "An error occurred."}), 500
+        return {"error": f"Error retrieving event {event_id}."}, 500
 
 @app.route('/events', methods=['GET'])
 def get_events():
     """Retrieve all events within a specific time range."""
-    try:
-        datetime_format = request.args.get('datetime_format', DATETIME_FORMAT)
-        from_time_str = request.args.get('from_time')
-        to_time_str = request.args.get('to_time')
+    datetime_format = request.args.get('datetime_format', DATETIME_FORMAT)
+    from_time_str = request.args.get('from_time')
+    to_time_str = request.args.get('to_time')
 
-        now = datetime.now()
-        from_time = datetime.strptime(from_time_str, datetime_format) if from_time_str else datetime(now.year, now.month, now.day)
-        to_time = datetime.strptime(to_time_str, datetime_format) if to_time_str else now
+    response, status_code = retrieve_events(events, datetime_format, from_time_str, to_time_str)
+    return jsonify(response), status_code
 
-        if from_time > to_time:
-            return jsonify({"error": "'from_time' cannot be after 'to_time'."}), 400
-
-        matching_events = [
-            {**event, "time": datetime.strptime(event["time"], DATETIME_FORMAT).strftime(datetime_format)}
-            for event in events
-            if from_time <= datetime.strptime(event["time"], DATETIME_FORMAT) <= to_time
-        ]
-        return jsonify({"events": matching_events}), 200
-    except ValueError as ve:
-        logging.error(f"Invalid date format: {ve}")
-        return jsonify({"error": "Invalid date format."}), 400
-    except Exception as e:
-        logging.error(f"Error retrieving events: {e}")
-        return jsonify({"error": "An error occurred."}), 500
+# Load initial events
+events = load_events()
 
 # Main
 if __name__ == '__main__':

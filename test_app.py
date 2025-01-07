@@ -1,6 +1,6 @@
 import unittest
 import os
-from app import app, load_events, save_events
+from app import app, load_events, save_events, find_event_by_id
 import logging
 
 EVENTS_FILE = 'events.json'
@@ -56,6 +56,16 @@ class TestEventStorage(unittest.TestCase):
         response = self.client.get('/events/999')
         self.assertEqual(response.status_code, 404, "Non-existent event should return a 404 status.")
         self.assertIn("not found", response.json['error'], "Error message should indicate event not found.")
+
+    def test_find_event_by_id(self):
+        test_events = [
+            {"id": 1, "description": "Meeting", "time": "2025-01-07T10:00:00"},
+            {"id": 2, "description": "Conference", "time": "2025-01-08T15:00:00"},
+        ]
+        event, status_code = find_event_by_id(1, test_events, "%Y-%m-%dT%H:%M:%S")
+        assert status_code == 200
+        assert event["description"] == "Meeting"
+
 
 if __name__ == '__main__':
     unittest.main()
