@@ -79,7 +79,7 @@ To exit the container form the terminal: `Control + D`
 If you want to test the functionality of the app directly inside the Docker container you can access the container's shell:
 `docker exec -it calendar-service-container bash`
 
-Use the curl commands as described before, for example:
+Use the curl commands as described below in API endpoints, for example:
 `curl -X POST -H "Content-Type: application/json" -d '{"description": "Meeting with John", "time": "2025-01-06T14:00:00", "id": 6}' "http://127.0.0.1:5000/events"`
 
 
