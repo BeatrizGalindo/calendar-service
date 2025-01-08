@@ -105,7 +105,7 @@ Response:
 }
 ```
 
-### 2. GET/events/<ID>
+### 2. GET/events/ID
 This endpoint retrieves an event by its ID if there is no event with the specific ID there will be an error message displayed.
 
 Example: `curl -X GET http://127.0.0.1:5000/events/1`
