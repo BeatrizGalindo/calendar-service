@@ -67,16 +67,17 @@ This will start the container and map port 5000 from the container to 5001 on yo
 
 #### Run tests inside the container
 
-First access the container, in the terminal execute the followint command to enter an intteractive shell inside the running container:
+First access the container, in the terminal execute the following command to enter an interactive shell inside the running container:
 ```
 docker exec -it calendar-service-container /bin/bash
 ```
 Inside the container you can run the test as usual:
 `python3 -m unittest test_app.py`
-To exit the container form the terminal `Control + D`
+
+To exit the container form the terminal: `Control + D`
 
 
-If you want to test directly inside the Docker container you can access the container's shell:
+If you want to test the functionality of the app directly inside the Docker container you can access the container's shell:
 `docker exec -it calendar-service-container bash`
 
 Use the curl commands as described before, for example:
@@ -107,7 +108,7 @@ Response:
 ```
 
 ### 2. GET/events/<ID>
-This endpoint retrieves an event by its ID. 
+This endpoint retrieves an event by its ID if there is no event with the specific ID there will be an error message displayed.
 
 Example: `curl -X GET http://127.0.0.1:5000/events/1`
 
