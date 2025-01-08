@@ -63,7 +63,6 @@ Once the image is built, run the container with the following command:
 ```
 docker run -d -p 5001:5000 --name calendar-service-container calendar-service
 ```
-This will start the container and map port 5000 from the container to 5001 on your host machine. You can access the service at http://localhost:5001.
 
 #### Run tests inside the container
 
@@ -81,8 +80,7 @@ If you want to test the functionality of the app directly inside the Docker cont
 `docker exec -it calendar-service-container bash`
 
 Use the curl commands as described before, for example:
-`curl -X POST -H "Content-Type: application/json" -d '{"description": "Meeting with John", "time": "2025-01-06T14:00:00", "id": 6}' "http://127.0.0.1:5000/events`
-
+`curl -X POST -H "Content-Type: application/json" -d '{"description": "Meeting with John", "time": "2025-01-06T14:00:00", "id": 6}' "http://127.0.0.1:5000/events"`
 
 
 ### API Endpoints
