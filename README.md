@@ -65,6 +65,23 @@ docker run -d -p 5001:5000 --name calendar-service-container calendar-service
 ```
 This will start the container and map port 5000 from the container to 5001 on your host machine. You can access the service at http://localhost:5001.
 
+#### Run tests inside the container
+
+First access the container, in the terminal execute the followint command to enter an intteractive shell inside the running container:
+```
+docker exec -it calendar-service-container /bin/bash
+```
+Inside the container you can run the test as usual:
+`python3 -m unittest test_app.py`
+To exit the container form the terminal `Control + D`
+
+
+If you want to test directly inside the Docker container you can access the container's shell:
+`docker exec -it calendar-service-container bash`
+
+Use the curl commands as described before, for example:
+`curl -X POST -H "Content-Type: application/json" -d '{"description": "Meeting with John", "time": "2025-01-06T14:00:00", "id": 6}' "http://127.0.0.1:5000/events`
+
 
 
 ### API Endpoints
@@ -129,3 +146,5 @@ Response:
 ### Troubleshooting
 - Empty Reply from Server: This typically happens if the Flask app doesn't start correctly. Ensure the container is running and accessible via the correct port.
 - Missing events file: If there is no `events.json` file, the service will create one automatically.
+- Docker: 
+  - check your docker container is running: `docker ps`
