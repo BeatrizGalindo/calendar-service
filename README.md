@@ -18,24 +18,37 @@ The service stores events persistently in a `JSON` file (`events.json`), and it 
 ## Requirements
 
 - Python 3.13
-- Flask
-- `requirements.txt` dependencies
+- Pip
 
+To use a virtual environment, run:
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+```
 
-## Installation
-
-### 1. Clone the Repository
+To install the required dependencies, run:
 
 ```bash
-git clone <repository-url>
-cd calendar-service
-```
-
-### 2. Install Dependencies
-```
 pip install -r requirements.txt
 ```
-### 3. Docker
+
+### Run the app
+Use the following command to run the app on your terminal. 
+```bash
+python3 app.py 
+```
+
+### Access the app
+The webserver is now accessible at [localhost:5000](http://127.0.0.1:5000)
+
+### Testing
+Unit tests are provided to validate the functionality. 
+Run the tests using the following command.
+```bash
+python3 -m unittest test_app.py
+```
+
+## Docker
 
 You can containerize the service using Docker. If you don't have Docker installed, follow the instructions on Docker's website to install it.
 
@@ -52,17 +65,7 @@ docker run -d -p 5001:5000 --name calendar-service-container calendar-service
 ```
 This will start the container and map port 5000 from the container to 5001 on your host machine. You can access the service at http://localhost:5001.
 
-### 4. Run the application locally (without Docker)
 
-```
-python3 app.py
-```
-
-### 5. Run the tests
-
-```
-python3 -m unittest test_app.py
-```
 
 ### API Endpoints
 
@@ -76,13 +79,12 @@ This endpoint accepts an event payload and stores the event in events.json.
 }
 ```
 Example: 
-`curl -X POST http://localhost:5001/events -H "Content-Type: application/json" -d '{"description": "Meeting with John", "time": "2024-01-15T14:00:00", "id": 1}'`
-
+`curl -X POST -H "Content-Type: application/json" -d '{"description": "Meeting with John", "time": "2025-01-06T14:00:00", "id": 1}' "http://127.0.0.1:5000/events"`
 Response: 
 ```
 {
     "description": "Meeting with John",
-    "time": "2024-01-15T14:00:00",
+    "time": "2025-01-06T14:00:00",
     "id": 1
 }
 ```
@@ -90,15 +92,13 @@ Response:
 ### 2. GET/events/<ID>
 This endpoint retrieves an event by its ID. 
 
-Example: `curl "http://localhost:5001/events/1"
-
-`
+Example: `curl -X GET http://127.0.0.1:5000/events/1`
 
 Response: 
 ```
 {
     "description": "Meeting with John",
-    "time": "2024-01-15T14:00:00",
+    "time": "2025-01-06T14:00:00",
     "id": 1
 }
 ```
@@ -106,14 +106,17 @@ Response:
 ### 3. GET/events
 This endpoint retrieves all events within a specified time range. You can provide optional datetime_format, from_time, and to_time query parameters.
 If you don't specify the time it will retrieve the events that are between the start of that day and the current time of executing the command. 
+If the `to time` of the requests is before than the `from time` an `error` will appear.
+If there are no events on that time frame an empty list will show up.
 
-Example: `curl "http://localhost:5001/events?datetime_format=%Y-%m-%d&from_time=2024-01-01T00:00:00&to_time=2024-12-31T23:59:59"`
+
+Example: `curl "http://127.0.0.1:5000/events?from_time=2025-01-05T00:00:00&to_time=2025-01-07T00:00:00"`
 
 Response: 
 ```
 {
     "description": "Meeting with John",
-    "time": "2024-01-15T14:00:00",
+    "time": "2025-01-06T14:00:00",
     "id": 1
 }
 ```
